@@ -36,12 +36,14 @@ class SEQUENCER_OT_track_transform(bpy.types.Operator):
         res_x = scene.render.resolution_x
         res_y = scene.render.resolution_y
 
-        tracker_names = []
+        pos_track = None
+        clip = None
 
         for movieclip in bpy.data.movieclips:
             for track in movieclip.tracking.tracks:
                 if track.name == scene.vse_transform_tools_tracker_1:
                     pos_track = track
+                    clip = movieclip
                     break
 
         start_frame = scene.frame_current
@@ -86,9 +88,9 @@ class SEQUENCER_OT_track_transform(bpy.types.Operator):
         tree = get_input_tree(transform_strip)[1::]
         for child in tree:
             child.mute = True
-
+        
         for marker in pos_track.markers:
-            scene.frame_current = marker.frame
+            scene.frame_current = marker.frame + clip.frame_start
             transform_strip.translate_start_x = ((((marker.co.x * res_x) - (res_x / 2)) / res_x) * 100)
             transform_strip.translate_start_y = ((((marker.co.y * res_y) - (res_y / 2)) / res_y) * 100)
 
@@ -123,7 +125,7 @@ class SEQUENCER_OT_track_transform(bpy.types.Operator):
                     break
 
             for marker in ref_track.markers:
-                scene.frame_current = marker.frame
+                scene.frame_current = marker.frame + clip.frame_start
                 p1 = None
                 for pos_marker in pos_track.markers:
                     if pos_marker.frame == marker.frame:
@@ -156,7 +158,7 @@ class SEQUENCER_OT_track_transform(bpy.types.Operator):
                     init_distance = distance_formula(p1, p2)
 
             for marker in ref_track.markers:
-                scene.frame_current = marker.frame
+                scene.frame_current = marker.frame + clip.frame_start
                 p1 = None
                 for pos_marker in pos_track.markers:
                     if pos_marker.frame == marker.frame:
